@@ -3,21 +3,29 @@ from random import choice
 import pandas
 
 BACKGROUND_COLOR = "#B1DDC6"
+WORDS = []
 
 # ---------------------------- PANDAS LOGIC ------------------------------- #
 data = pandas.read_csv("./data/en_ru.csv")
-words_dict = data.to_dict(orient="records")
-random_dict = choice(words_dict)
-eng_word = random_dict["English"]
-# rus_word = random_dict["Russian"]
+to_learn = data.to_dict(orient="records")
 
 
 # ---------------------------- LOGIC ------------------------------- #
-def new_word():
-    random_pair = choice(words_dict)
-    eng = random_pair["English"]
-    # rus_word = random_dict["Russian"]
-    canvas.itemconfig(word_text, text=eng)
+def next_word():
+    global WORDS
+    WORDS = choice(to_learn)
+    eng = WORDS["English"]
+    canvas.itemconfig(bg_card, image=front_card)
+    canvas.itemconfig(lang_text, text="English", fill="black")
+    canvas.itemconfig(word_text, text=eng, fill="black")
+    window.after(3000, translate)
+
+
+def translate():
+    rus = WORDS["Russian"]
+    canvas.itemconfig(bg_card, image=back_card)
+    canvas.itemconfig(lang_text, text="Russian", fill="white")
+    canvas.itemconfig(word_text, text=rus, fill="white")
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -29,21 +37,22 @@ window.config(padx=50, pady=50, bg=BACKGROUND_COLOR)
 canvas = Canvas(width=800, height=526, highlightthickness=0)
 front_card = PhotoImage(file="./images/card_front.png")
 back_card = PhotoImage(file="./images/card_back.png")
-canvas.create_image(400, 263, image=front_card)
+bg_card = canvas.create_image(400, 263, image=front_card)
 canvas.config(bg=BACKGROUND_COLOR)
-lang_text = canvas.create_text(400, 150, text="English", font=("Arial", 40, "italic"))
-word_text = canvas.create_text(400, 263, text=eng_word, font=("Arial", 60, "bold"))
+lang_text = canvas.create_text(400, 150, text="Title", font=("Arial", 40, "italic"))
+word_text = canvas.create_text(400, 263, text="Word", font=("Arial", 60, "bold"))
 canvas.grid(column=0, row=0, columnspan=2)
-
 
 # Buttons
 yes_img = PhotoImage(file="./images/right.png")
-yes_button = Button(image=yes_img, highlightthickness=0, command=new_word)
+yes_button = Button(image=yes_img, highlightthickness=0, command=next_word)
 yes_button.grid(column=0, row=1)
 
 no_img = PhotoImage(file="./images/wrong.png")
-no_button = Button(image=no_img, highlightthickness=0, command=new_word)
+no_button = Button(image=no_img, highlightthickness=0, command=next_word)
 no_button.grid(column=1, row=1)
+
+next_word()
 
 
 window.mainloop()
