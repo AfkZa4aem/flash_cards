@@ -3,7 +3,7 @@ from random import choice
 import pandas
 
 BACKGROUND_COLOR = "#B1DDC6"
-WORDS = []
+WORDS = {}
 
 # ---------------------------- PANDAS LOGIC ------------------------------- #
 data = pandas.read_csv("./data/en_ru.csv")
@@ -12,13 +12,14 @@ to_learn = data.to_dict(orient="records")
 
 # ---------------------------- LOGIC ------------------------------- #
 def next_word():
-    global WORDS
+    global WORDS, timer
+    timer = window.after_cancel(timer)
     WORDS = choice(to_learn)
     eng = WORDS["English"]
     canvas.itemconfig(bg_card, image=front_card)
     canvas.itemconfig(lang_text, text="English", fill="black")
     canvas.itemconfig(word_text, text=eng, fill="black")
-    window.after(3000, translate)
+    timer = window.after(3000, translate)
 
 
 def translate():
@@ -32,6 +33,7 @@ def translate():
 window = Tk()
 window.title("Flashy")
 window.config(padx=50, pady=50, bg=BACKGROUND_COLOR)
+timer = window.after(3000, translate)
 
 # Canvas
 canvas = Canvas(width=800, height=526, highlightthickness=0)
