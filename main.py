@@ -3,27 +3,44 @@ from random import choice
 import pandas
 
 BACKGROUND_COLOR = "#B1DDC6"
-WORDS = {}
+to_learn = {}
+word = {}
 
 # ---------------------------- PANDAS LOGIC ------------------------------- #
-data = pandas.read_csv("./data/en_ru.csv")
-to_learn = data.to_dict(orient="records")
+try:
+    data = pandas.read_csv("./data/words_to_learn.csv")
+except FileNotFoundError:
+    data = pandas.read_csv("./data/en_ru.csv")
+    to_learn = data.to_dict(orient="records")
+else:
+    to_learn = data.to_dict(orient="records")
 
 
 # ---------------------------- LOGIC ------------------------------- #
 def next_word():
-    global WORDS, timer
+    global word, timer
     timer = window.after_cancel(timer)
-    WORDS = choice(to_learn)
-    eng = WORDS["English"]
+    word = choice(to_learn)
+    eng = word["English"]
     canvas.itemconfig(bg_card, image=front_card)
     canvas.itemconfig(lang_text, text="English", fill="black")
     canvas.itemconfig(word_text, text=eng, fill="black")
     timer = window.after(3000, translate)
 
 
+def known():
+    to_learn.remove(word)
+    next_word()
+
+
+def unknown():
+    new_dict = pandas.DataFrame(to_learn)
+    new_dict.to_csv("./data/words_to_learn.csv", index=False)
+    next_word()
+
+
 def translate():
-    rus = WORDS["Russian"]
+    rus = word["Russian"]
     canvas.itemconfig(bg_card, image=back_card)
     canvas.itemconfig(lang_text, text="Russian", fill="white")
     canvas.itemconfig(word_text, text=rus, fill="white")
@@ -47,11 +64,11 @@ canvas.grid(column=0, row=0, columnspan=2)
 
 # Buttons
 yes_img = PhotoImage(file="./images/right.png")
-yes_button = Button(image=yes_img, highlightthickness=0, command=next_word)
+yes_button = Button(image=yes_img, highlightthickness=0, command=known)
 yes_button.grid(column=0, row=1)
 
 no_img = PhotoImage(file="./images/wrong.png")
-no_button = Button(image=no_img, highlightthickness=0, command=next_word)
+no_button = Button(image=no_img, highlightthickness=0, command=unknown)
 no_button.grid(column=1, row=1)
 
 next_word()
